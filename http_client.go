@@ -220,6 +220,8 @@ type Data struct {
 	ProductionMode bool        `json:"production_mode,omitempty"`
 	Description    string      `json:"description,omitempty"`
 	ThirdPartyId   string      `json:"thirdparty_id,omitempty"`
+	ChannelPush    bool        `json:"mipush,omitempty"`
+	ChannelActivity string     `json:"mi_activity,omitempty"`
 }
 
 type Result struct {
