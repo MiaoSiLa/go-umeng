@@ -20,7 +20,6 @@ var (
 	IOSAppKey              string
 	AndroidAppMasterSecret string
 	IOSAppMasterSecret     string
-	DataByte               []byte
 )
 
 type Platform int32
@@ -204,24 +203,25 @@ type IOSAps struct {
 }
 */
 type Data struct {
-	Platform       Platform    `json:"-"`
-	AppKey         string      `json:"appkey,omitempty"`
-	TimeStamp      int64       `json:"timestamp,omitempty"`
-	TaskId         string      `json:"task_id,omitempty"`
-	FileContent    string      `json:"content,omitempty"`
-	Type           string      `json:"type,omitempty"`
-	DeviceTokens   string      `json:"device_tokens,omitempty"`
-	AliasType      string      `json:"alias_type,omitempty"`
-	Alias          string      `json:"alias,omitempty"`
-	FileId         string      `json:"file_id,omitempty"`
-	Filter         string      `json:"filter,omitempty"`
-	Payload        interface{} `json:"payload,omitempty"`
-	Policy         Policy      `json:"policy,omitempty"`
-	ProductionMode bool        `json:"production_mode,omitempty"`
-	Description    string      `json:"description,omitempty"`
-	ThirdPartyId   string      `json:"thirdparty_id,omitempty"`
-	ChannelPush    bool        `json:"mipush,omitempty"`
-	ChannelActivity string     `json:"mi_activity,omitempty"`
+	Platform        Platform    `json:"-"`
+	AppKey          string      `json:"appkey,omitempty"`
+	TimeStamp       int64       `json:"timestamp,omitempty"`
+	TaskId          string      `json:"task_id,omitempty"`
+	FileContent     string      `json:"content,omitempty"`
+	Type            string      `json:"type,omitempty"`
+	DeviceTokens    string      `json:"device_tokens,omitempty"`
+	AliasType       string      `json:"alias_type,omitempty"`
+	Alias           string      `json:"alias,omitempty"`
+	FileId          string      `json:"file_id,omitempty"`
+	Filter          string      `json:"filter,omitempty"`
+	Payload         interface{} `json:"payload,omitempty"`
+	Policy          Policy      `json:"policy,omitempty"`
+	ProductionMode  bool        `json:"production_mode,omitempty"`
+	Description     string      `json:"description,omitempty"`
+	ThirdPartyId    string      `json:"thirdparty_id,omitempty"`
+	ChannelPush     bool        `json:"mipush,omitempty"`
+	ChannelActivity string      `json:"mi_activity,omitempty"`
+	dataBytes       []byte      `json:"-"`
 }
 
 type Result struct {
@@ -294,8 +294,8 @@ func (data *Data) Upload() (result Result) {
 }
 
 func (data *Data) Sign(reqPath string) (api string) {
-	DataByte, _ = json.Marshal(data)
-	jsonStr := string(DataByte)
+	data.dataBytes, _ = json.Marshal(data)
+	jsonStr := string(data.dataBytes)
 	sign := ""
 	if data.Platform == AppAndroid {
 		sign = Md5(fmt.Sprintf("POST%s%s%s%s", Host, reqPath, jsonStr, AndroidAppMasterSecret))
@@ -307,7 +307,7 @@ func (data *Data) Sign(reqPath string) (api string) {
 }
 
 func (data *Data) Send(url string) (result Result) {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(DataByte))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data.dataBytes))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
