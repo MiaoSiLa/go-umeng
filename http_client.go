@@ -250,7 +250,7 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
 			if v.DisplayType == "message" && len(v.Custom) == 0 {
-				return
+				panic("missing custom field")
 			}
 			payload.DisplayType = v.DisplayType
 			payload.Body = v
@@ -260,6 +260,7 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		}
 		data.Payload = payload
 	} else if data.Platform == AppIOS {
+		// Doc: http://dev.umeng.com/push/ios/api-doc#2_1_3
 		payload := make(IOSPayload, 0)
 		payload["aps"] = aps
 		if len(extras) > 0 {
