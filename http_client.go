@@ -302,7 +302,8 @@ func (data *Data) Sign(reqPath string) (api string) {
 	return
 }
 
-func (data *Data) Send(url string) (result Result, err error) {
+func (data *Data) Send(url string) (Result, error) {
+	var result Result
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data.dataBytes))
 	if err != nil {
 		return result, err
@@ -322,7 +323,7 @@ func (data *Data) Send(url string) (result Result, err error) {
 	if err != nil {
 		return result, err
 	}
-	return result, err
+	return result, nil
 }
 
 func Md5(s string) string {
