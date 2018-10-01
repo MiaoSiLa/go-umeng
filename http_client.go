@@ -247,6 +247,7 @@ func (data *Data) SetPolicy(policy Policy) {
 
 func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) (result Result, err error) {
 	if data.Platform == AppAndroid {
+		// Doc: http://dev.umeng.com/push/android/api-doc#2_1_3
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
 			if v.DisplayType == "message" && len(v.Custom) == 0 {
