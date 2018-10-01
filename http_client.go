@@ -245,12 +245,13 @@ func (data *Data) SetPolicy(policy Policy) {
 	data.Policy = policy
 }
 
-func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) (result Result) {
+func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) (result Result, err error) {
 	if data.Platform == AppAndroid {
+		// Doc: http://dev.umeng.com/push/android/api-doc#2_1_3
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
 			if v.DisplayType == "message" && len(v.Custom) == 0 {
-				return
+				panic("missing custom field")
 			}
 			payload.DisplayType = v.DisplayType
 			payload.Body = v
@@ -260,6 +261,7 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		}
 		data.Payload = payload
 	} else if data.Platform == AppIOS {
+		// Doc: http://dev.umeng.com/push/ios/api-doc#2_1_3
 		payload := make(IOSPayload, 0)
 		payload["aps"] = aps
 		if len(extras) > 0 {
@@ -274,23 +276,19 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 	if v, ok := policy.(Policy); ok {
 		data.SetPolicy(v)
 	}
-	result = data.Send(data.Sign(PostPath))
-	return
+	return data.Send(data.Sign(PostPath))
 }
 
-func (data *Data) Status() (result Result) {
-	result = data.Send(data.Sign(StatusPath))
-	return
+func (data *Data) Status() (result Result, err error) {
+	return data.Send(data.Sign(StatusPath))
 }
 
-func (data *Data) Cancel() (result Result) {
-	result = data.Send(data.Sign(CancelPath))
-	return
+func (data *Data) Cancel() (result Result, err error) {
+	return data.Send(data.Sign(CancelPath))
 }
 
-func (data *Data) Upload() (result Result) {
-	result = data.Send(data.Sign(UploadPath))
-	return
+func (data *Data) Upload() (result Result, err error) {
+	return data.Send(data.Sign(UploadPath))
 }
 
 func (data *Data) Sign(reqPath string) (api string) {
@@ -306,18 +304,28 @@ func (data *Data) Sign(reqPath string) (api string) {
 	return
 }
 
-func (data *Data) Send(url string) (result Result) {
+func (data *Data) Send(url string) (Result, error) {
+	var result Result
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data.dataBytes))
+	if err != nil {
+		return result, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return result, err
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	json.Unmarshal(body, &result)
-	return
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return result, err
+	}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 func Md5(s string) string {
