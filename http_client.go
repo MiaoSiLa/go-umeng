@@ -224,9 +224,23 @@ type Data struct {
 	dataBytes       []byte      `json:"-"`
 }
 
-type Result struct {
+type respond struct {
 	Code string `json:"ret,omitempty"`
-	Data map[string]string
+	Data Result `json:"data"`
+}
+
+type Result map[string]string
+
+type APIError struct {
+	message string
+}
+
+func (e *APIError) Error() string {
+	return e.message
+}
+
+func newAPIError(msg string) *APIError {
+	return &APIError{"umeng: " + msg}
 }
 
 func NewData(pf Platform) (data *Data) {
@@ -305,27 +319,37 @@ func (data *Data) Sign(reqPath string) (api string) {
 }
 
 func (data *Data) Send(url string) (Result, error) {
-	var result Result
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data.dataBytes))
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	respHttp, err := client.Do(req)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	defer respHttp.Body.Close()
+	body, err := ioutil.ReadAll(respHttp.Body)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	err = json.Unmarshal(body, &result)
+	var resp respond
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		return result, err
+		return nil, newAPIError("json parse error")
 	}
-	return result, nil
+
+	if resp.Code != "SUCCESS" {
+		data, er := json.Marshal(resp.Data)
+		if er != nil {
+			err = newAPIError("unexpected response content")
+		} else {
+			err = newAPIError(string(data))
+		}
+		return nil, err
+	}
+	return resp.Data, nil
 }
 
 func Md5(s string) string {
