@@ -2,9 +2,9 @@ package umeng_test
 
 import (
 	"testing"
-	"github.com/stretchr/testify/assert"
 
 	umeng "github.com/MiaoSiLa/go-umeng"
+	"github.com/stretchr/testify/assert"
 )
 
 var data *umeng.Data

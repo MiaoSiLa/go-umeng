@@ -229,8 +229,10 @@ type respond struct {
 	Data Result `json:"data"`
 }
 
+// Result type can store the "data" section of umeng JSON respond
 type Result map[string]string
 
+// APIError is the go-umeng API error type
 type APIError struct {
 	message string
 }
@@ -325,23 +327,23 @@ func (data *Data) Send(url string) (Result, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
-	respHttp, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer respHttp.Body.Close()
-	body, err := ioutil.ReadAll(respHttp.Body)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	var resp respond
-	err = json.Unmarshal(body, &resp)
+	var result respond
+	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, newAPIError("json parse error")
 	}
 
-	if resp.Code != "SUCCESS" {
-		data, er := json.Marshal(resp.Data)
+	if result.Code != "SUCCESS" {
+		data, er := json.Marshal(result.Data)
 		if er != nil {
 			err = newAPIError("unexpected response content")
 		} else {
@@ -349,7 +351,7 @@ func (data *Data) Send(url string) (Result, error) {
 		}
 		return nil, err
 	}
-	return resp.Data, nil
+	return result.Data, nil
 }
 
 func Md5(s string) string {
