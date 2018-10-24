@@ -224,12 +224,12 @@ type Data struct {
 	dataBytes       []byte      `json:"-"`
 }
 
-type respond struct {
+type response struct {
 	Code string `json:"ret,omitempty"`
 	Data Result `json:"data"`
 }
 
-// Result type can store the "data" section of umeng JSON respond
+// Result type can store the "data" section of umeng JSON response
 type Result map[string]string
 
 // APIError is the go-umeng API error type
@@ -336,7 +336,7 @@ func (data *Data) Send(url string) (Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	var result respond
+	var result response
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, newAPIError("json parse error")
