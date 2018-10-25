@@ -341,9 +341,8 @@ func (data *Data) Send(url string) (Result, error) {
 	if err != nil {
 		if resp.StatusCode != http.StatusOK {
 			return nil, newAPIError("HTTP " + resp.Status)
-		} else {
-			return nil, err
 		}
+		return nil, err
 	}
 
 	if result.Code != "SUCCESS" {
