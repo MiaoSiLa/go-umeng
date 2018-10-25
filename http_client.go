@@ -224,9 +224,25 @@ type Data struct {
 	dataBytes       []byte      `json:"-"`
 }
 
-type Result struct {
+type response struct {
 	Code string `json:"ret,omitempty"`
-	Data map[string]string
+	Data Result `json:"data"`
+}
+
+// Result type can store the "data" section of umeng JSON response
+type Result map[string]string
+
+// APIError is the go-umeng API error type
+type APIError struct {
+	message string
+}
+
+func (e *APIError) Error() string {
+	return e.message
+}
+
+func newAPIError(msg string) *APIError {
+	return &APIError{"umeng: " + msg}
 }
 
 func NewData(pf Platform) (data *Data) {
@@ -305,27 +321,40 @@ func (data *Data) Sign(reqPath string) (api string) {
 }
 
 func (data *Data) Send(url string) (Result, error) {
-	var result Result
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data.dataBytes))
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
+	var result response
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return result, err
+		if resp.StatusCode != http.StatusOK {
+			return nil, newAPIError("JSON parse error, HTTP " + resp.Status)
+		}
+		return nil, err
 	}
-	return result, nil
+
+	if result.Code != "SUCCESS" {
+		data, er := json.Marshal(result.Data)
+		if er != nil {
+			err = newAPIError("unexpected response content")
+		} else {
+			err = newAPIError(string(data))
+		}
+		return nil, err
+	}
+	return result.Data, nil
 }
 
 func Md5(s string) string {

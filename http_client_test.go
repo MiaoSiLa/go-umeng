@@ -2,7 +2,9 @@ package umeng_test
 
 import (
 	"testing"
-	"github.com/busyfree/go-umeng"
+
+	umeng "github.com/MiaoSiLa/go-umeng"
+	"github.com/stretchr/testify/assert"
 )
 
 var data *umeng.Data
@@ -12,31 +14,18 @@ func init() {
 }
 
 func TestStatus(t *testing.T) {
-	resp := data.Status()
-	if len(resp.Code) > 0 {
-		t.Log("data.Status 测试通过")
-	} else {
-		t.Error("data.Status 测试不通过")
-	}
-
+	_, err := data.Status()
+	assert.Nil(t, err)
 }
 
 func TestCancel(t *testing.T) {
-	resp := data.Cancel()
-	if len(resp.Code) > 0 {
-		t.Log("data.Cancel 测试通过")
-	} else {
-		t.Error("data.Cancel 测试不通过")
-	}
+	_, err := data.Cancel()
+	assert.Nil(t, err)
 }
 
 func TestUpload(t *testing.T) {
-	resp := data.Upload()
-	if len(resp.Code) > 0 {
-		t.Log("data.Upload 测试通过")
-	} else {
-		t.Error("data.Upload 测试不通过")
-	}
+	_, err := data.Upload()
+	assert.Nil(t, err)
 }
 
 func TestPush(t *testing.T) {
@@ -48,10 +37,6 @@ func TestPush(t *testing.T) {
 	extra := make(map[string]string, 0)
 	extra["key1"] = "1212x"
 	extra["key2"] = "12123323"
-	resp := data.Push(body, nil, nil, extra)
-	if len(resp.Code) > 0 {
-		t.Log("data.Push 测试通过")
-	} else {
-		t.Error("data.Push 测试不通过")
-	}
+	_, err := data.Push(body, nil, nil, extra)
+	assert.Nil(t, err)
 }
