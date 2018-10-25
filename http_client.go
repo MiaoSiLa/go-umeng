@@ -331,6 +331,9 @@ func (data *Data) Send(url string) (Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, newAPIError("HTTP " + resp.Status)
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
