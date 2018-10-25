@@ -340,7 +340,7 @@ func (data *Data) Send(url string) (Result, error) {
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		if resp.StatusCode != http.StatusOK {
-			return nil, newAPIError("HTTP " + resp.Status)
+			return nil, newAPIError("JSON parse error, HTTP " + resp.Status)
 		}
 		return nil, err
 	}
