@@ -331,9 +331,6 @@ func (data *Data) Send(url string) (Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, newAPIError("HTTP " + resp.Status)
-	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -342,7 +339,11 @@ func (data *Data) Send(url string) (Result, error) {
 	var result response
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return nil, newAPIError("json parse error")
+		if resp.StatusCode != http.StatusOK {
+			return nil, newAPIError("HTTP " + resp.Status)
+		} else {
+			return nil, err
+		}
 	}
 
 	if result.Code != "SUCCESS" {
