@@ -216,7 +216,7 @@ type Data struct {
 	Filter          string      `json:"filter,omitempty"`
 	Payload         interface{} `json:"payload,omitempty"`
 	Policy          Policy      `json:"policy,omitempty"`
-	ProductionMode  bool        `json:"production_mode,omitempty"`
+	ProductionMode  *bool       `json:"production_mode,omitempty"`
 	Description     string      `json:"description,omitempty"`
 	ThirdPartyId    string      `json:"thirdparty_id,omitempty"`
 	ChannelPush     bool        `json:"mipush,omitempty"`
