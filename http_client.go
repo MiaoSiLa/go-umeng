@@ -203,27 +203,30 @@ type IOSAps struct {
 }
 */
 type Data struct {
-	Platform        Platform    `json:"-"`
-	AppKey          string      `json:"appkey,omitempty"`
-	TimeStamp       int64       `json:"timestamp,omitempty"`
-	TaskId          string      `json:"task_id,omitempty"`
-	FileContent     string      `json:"content,omitempty"`
-	Type            string      `json:"type,omitempty"`
-	DeviceTokens    string      `json:"device_tokens,omitempty"`
-	AliasType       string      `json:"alias_type,omitempty"`
-	Alias           string      `json:"alias,omitempty"`
-	FileId          string      `json:"file_id,omitempty"`
-	Filter          string      `json:"filter,omitempty"`
-	Payload         interface{} `json:"payload,omitempty"`
-	Policy          Policy      `json:"policy,omitempty"`
-	ProductionMode  *bool       `json:"production_mode,omitempty"`
-	Description     string      `json:"description,omitempty"`
-	ThirdPartyId    string      `json:"thirdparty_id,omitempty"`
-	ChannelPush     bool        `json:"mipush,omitempty"`
-	ChannelActivity string      `json:"mi_activity,omitempty"`
-	dataBytes       []byte      `json:"-"`
+	Platform          Platform          `json:"-"`
+	AppKey            string            `json:"appkey,omitempty"`
+	TimeStamp         int64             `json:"timestamp,omitempty"`
+	TaskId            string            `json:"task_id,omitempty"`
+	FileContent       string            `json:"content,omitempty"`
+	Type              string            `json:"type,omitempty"`
+	DeviceTokens      string            `json:"device_tokens,omitempty"`
+	AliasType         string            `json:"alias_type,omitempty"`
+	Alias             string            `json:"alias,omitempty"`
+	FileId            string            `json:"file_id,omitempty"`
+	Filter            string            `json:"filter,omitempty"`
+	Payload           interface{}       `json:"payload,omitempty"`
+	Policy            Policy            `json:"policy,omitempty"`
+	ProductionMode    *bool             `json:"production_mode,omitempty"`
+	Description       string            `json:"description,omitempty"`
+	ThirdPartyId      string            `json:"thirdparty_id,omitempty"`
+	ChannelPush       bool              `json:"mipush,omitempty"`
+	ChannelProperties ChannelProperties `json:"channel_properties,omitempty"`
+	dataBytes         []byte            `json:"-"`
 }
 
+type ChannelProperties struct {
+	ChannelActivity string `json:"channel_activity,omitempty"`
+}
 type response struct {
 	Code string `json:"ret,omitempty"`
 	Data Result `json:"data"`
