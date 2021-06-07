@@ -30,92 +30,108 @@ const (
 )
 
 /*
-可选 发送策略
-"policy":{
-	"start_time":"xx",   // 可选 定时发送时间，若不填写表示立即发送。定时发送时间不能小于当前时间 格式: "YYYY-MM-DD HH:mm:ss"。注意, start_time只对任务生效。
-	"expire_time":"xx",  // 可选 消息过期时间,其值不可小于发送时间或者 start_time(如果填写了的话),如果不填写此参数，默认为3天后过期。格式同start_time
-	"max_send_num": xx   // 可选 发送限速，每秒发送的最大条数。开发者发送的消息如果有请求自己服务器的资源，可以考虑此参数。
-	"out_biz_no": "xx"   // 可选 开发者对消息的唯一标识，服务器会根据这个标识避免重复发送。有些情况下（例如网络异常）开发者可能会重复调用API导致消息多次下发到客户端。如果需要处理这种情况，可以考虑此参数。注意, out_biz_no只对任务生效。
+可选，Android 的发送策略
+"policy":{    // 可选，发送策略
+    "start_time":"xx",    // 可选，定时发送时，若不填写表示立即发送
+                            // 定时发送时间不能小于当前时间
+                            // 格式:"yyyy-MM-dd HH:mm:ss"
+                            // 注意，start_time只对任务类消息生效
+    "expire_time":"xx",    // 可选，消息过期时间，其值不可小于发送时间或者start_time(如果填写了的话)
+                              // 如果不填写此参数，默认为3天后过期。格式同start_time
+    "max_send_num": xx,    // 可选，发送限速，每秒发送的最大条数。最小值1000
+                                 //开发者发送的消息如果有请求自己服务器的资源，可以考虑此参数
+    "out_biz_no":"xx"    // 可选，消息发送接口对任务类消息的幂等性保证
+                            // 强烈建议开发者在发送任务类消息时填写这个字段，友盟服务端会根据这个字段对消息做去重避免重复发送
+                            // 同一个appkey下面的多个消息会根据out_biz_no去重，不同发送任务的out_biz_no需要保证不同，否则会出现后发消息被去重过滤的情况
+                            // 注意，out_biz_no只对任务类消息有效
+}
+*/
+/*
+可选，iOS 的发送策略
+"policy":{    // 可选，发送策略
+    "start_time":"xx",    // 可选，定时发送时间，若不填写表示立即发送
+                                // 定时发送时间不能小于当前时间
+                                // 格式: "yyyy-MM-dd HH:mm:ss"
+                                // 注意，start_time只对任务生效
+    "expire_time":"xx",    // 可选，消息过期时间，其值不可小于发送时间或者
+                                  // start_time(如果填写了的话)
+                                  // 如果不填写此参数，默认为3天后过期。格式同start_time
+    "out_biz_no":"xx",    // 可选，消息发送接口对任务类消息的幂等性保证
+                                 // 强烈建议开发者在发送任务类消息时填写这个字段，友盟服务端会根据这个字段对消息做去重避免重复发送
+                                 // 同一个appkey下面的多个消息会根据out_biz_no去重，不同发送任务的out_biz_no需要保证不同，否则会出现后发消息被去重过滤的情况
+                                 // 注意，out_biz_no只对任务类消息有效
+    "apns_collapse_id":"xx"    // 可选，多条带有相同apns_collapse_id的消息，iOS设备仅展示
+                                        // 最新的一条，字段长度不得超过64bytes
 }
 */
 type Policy struct {
-	StartTime  string `json:"start_time,omitempty"`
-	ExpireTime string `json:"expire_time,omitempty"`
-	MaxSendNum int    `json:"max_send_num,omitempty"`
-	OutBizNo   string `json:"out_biz_no,omitempty"`
+	StartTime      string `json:"start_time,omitempty"`
+	ExpireTime     string `json:"expire_time,omitempty"`
+	MaxSendNum     int    `json:"max_send_num,omitempty"` // Android 使用
+	OutBizNo       string `json:"out_biz_no,omitempty"`
+	ApnsCollapseId string `json:"apns_collapse_id,omitempty"` // iOS 使用
 }
 
 /*
-必填 消息内容(Android最大为1840B), 包含参数说明如下(JSON格式)
-"payload":{
-    "display_type":"xx",  // 必填 消息类型，值可以为:
-    "body":               // 必填 消息体。display_type=message时,body的内容只需填写custom字段。display_type=notification时, body包含如下参数:
-    {
-        // 通知展现内容:
-        "ticker":"xx",     // 必填 通知栏提示文字
-        "title":"xx",      // 必填 通知标题
-        "text":"xx",       // 必填 通知文字描述
-        // 自定义通知图标:
-        "icon":"xx",       // 可选 状态栏图标ID, R.drawable.[smallIcon],
-                                   如果没有, 默认使用应用图标。
-                                   图片要求为24*24dp的图标,或24*24px放在drawable-mdpi下。
-                                   注意四周各留1个dp的空白像素
-        "largeIcon":"xx",  // 可选 通知栏拉开后左侧图标ID, R.drawable.[largeIcon].
-                                   图片要求为64*64dp的图标,
-                                   可设计一张64*64px放在drawable-mdpi下,
-                                   注意图片四周留空，不至于显示太拥挤
-        "img": "xx",       // 可选 通知栏大图标的URL链接。该字段的优先级大于largeIcon。
-                                   该字段要求以http或者https开头。
+必填 Android 的消息内容(最大为1840B), 包含参数说明如下(JSON格式)
+"body":{    // 必填，消息体
+               // 当display_type=message时，body的内容只需填写custom字段
+               // 当display_type=notification时，body包含如下参数:
+    "title":"xx",    // 必填，通知标题
+    "text":"xx",    // 必填，通知文字描述
 
-        // 自定义通知声音:
-        "sound": "xx",     // 可选 通知声音，R.raw.[sound].
-                                   如果该字段为空，采用SDK默认的声音, 即res/raw/下的
-                                       umeng_push_notification_default_sound声音文件
-                                   如果SDK默认声音文件不存在，
-                                       则使用系统默认的Notification提示音。
+    // 自定义通知图标:
+    "icon":"xx",    // 可选，状态栏图标ID，R.drawable.[smallIcon]，
+                        // 如果没有，默认使用应用图标
+                        // 图片要求为24*24dp的图标，或24*24px放在drawable-mdpi下
+                        // 注意四周各留1个dp的空白像素
+    "largeIcon":"xx",    // 可选，通知栏拉开后左侧图标ID，R.drawable.[largeIcon]
+                              // 图片要求为64*64dp的图标
+                              // 可设计一张64*64px放在drawable-mdpi下
+                              // 注意图片四周留空，不至于显示太拥挤
+    "img":"xx",    // 可选，通知栏大图标的URL链接。该字段的优先级大于largeIcon
+                       // 厂商通道消息，目前只支持华为，链接需要以https开头不符合此要求则通过华为通道下发时不展示该图标。[华为推送](https://developer.huawei.com/consumer/cn/doc/development/HMSCore-References-V5/https-send-api-0000001050986197-V5#ZH-CN_TOPIC_0000001050986197__section165641411103315 "华为推送")搜索“图片”即可找到关于该参数的说明
+                       // 该字段要求以http或者https开头，图片建议不大于100KB。
+    "expand_image":"xx",    // 消息下方展示大图，支持自有通道消息展示
+                                      // 厂商通道展示大图目前仅支持小米,要求图片为固定876*324px,仅处理在友盟推送后台上传的图片。如果上传的图片不符合小米的要求，则通过小米通道下发的消息不展示该图片，其他要求请参考小米推送文档[小米富媒体推送](https://dev.mi.com/console/doc/detail?pId=1278#_3_3 "小米富媒体推送")
 
-        // 自定义通知样式:
-        "builder_id": xx   // 可选 默认为0，用于标识该通知采用的样式。使用该参数时,
-                       开发者必须在SDK里面实现自定义通知栏样式。
+    // 自定义通知声音:
+    "sound":"xx",    // 可选，通知声音，R.raw.[sound]
+                          // 如果该字段为空，采用SDK默认的声音，即res/raw/下的
+                          // umeng_push_notification_default_sound声音文件。如果SDK默认声音文件不存在，则使用系统默认Notification提示音
 
-        // 通知到达设备后的提醒方式
-        "play_vibrate":"true/false", // 可选 收到通知是否震动,默认为"true".
-                       注意，"true/false"为字符串
-        "play_lights":"true/false",  // 可选 收到通知是否闪灯,默认为"true"
-        "play_sound":"true/false",   // 可选 收到通知是否发出声音,默认为"true"
+    // 自定义通知样式:
+    "builder_id": xx,    // 可选，默认为0，用于标识该通知采用的样式。使用该参数时
+                              // 开发者必须在SDK里面实现自定义通知栏样式
 
-        // 点击"通知"的后续行为，默认为打开app。
-        "after_open": "xx" // 必填 值可以为:
-                                   "go_app": 打开应用
-                                   "go_url": 跳转到URL
-                                   "go_activity": 打开特定的activity
-                                   "go_custom": 用户自定义内容。
-        "url": "xx",       // 可选 当"after_open"为"go_url"时，必填。
-                                   通知栏点击后跳转的URL，要求以http或者https开头
-        "activity":"xx",   // 可选 当"after_open"为"go_activity"时，必填。
-                                   通知栏点击后打开的Activity
-        "custom":"xx"/{}   // 可选 display_type=message, 或者
-                                   display_type=notification且
-                                   "after_open"为"go_custom"时，
-                                   该字段必填。用户自定义内容, 可以为字符串或者JSON格式。
-    },
-    extra:                 // 可选 用户自定义key-value。只对"通知"(display_type=notification)生效。可以配合通知到达后,打开App,打开URL,打开Activity使用。
-    {
-        "key1": "value1",
-        "key2": "value2",
-        ...
-    }
+    // 通知到达设备后的提醒方式(注意，"true/false"为字符串):
+    "play_vibrate":"true/false",    // 可选，收到通知是否震动，默认为"true"
+    "play_lights":"true/false",    // 可选，收到通知是否闪灯，默认为"true"
+    "play_sound":"true/false",    // 可选，收到通知是否发出声音，默认为"true"
+
+    //点击"通知"的后续行为(默认为打开app):
+    "after_open":"xx",    // 可选，默认为"go_app"，值可以为:
+                                 // "go_app":打开应用
+                                 // "go_url":跳转到URL
+                                 // "go_activity":打开特定的activity
+                                 // "go_custom":用户自定义内容
+    "url":"xx",    // 当after_open=go_url时，必填
+                     // 通知栏点击后跳转的URL，要求以http或者https开头
+    "activity":"xx",    //当after_open=go_activity时，必填。
+                            // 通知栏点击后打开的Activity
+    "custom":"xx"/{},    // 当display_type=message时,必填
+                               // 当display_type=notification且after_open=go_custom时，必填
+                               // 用户自定义内容，可以为字符串或者JSON格式。
 }
-
 */
 type AndroidBody struct {
 	DisplayType string `json:"-"`
-	Ticker      string `json:"ticker,omitempty"`
 	Title       string `json:"title,omitempty"`
 	Text        string `json:"text,omitempty"`
 	Icon        string `json:"icon,omitempty"`
 	LargeIcon   string `json:"largeIcon,omitempty"`
 	Img         string `json:"img,omitempty"`
+	ExpandImage string `json:"expand_image,omitempty"` // 暂时用不到
 	Sound       string `json:"sound,omitempty"`
 	BuilderId   string `json:"builder_id,omitempty"`
 	PlayVibrate bool   `json:"play_vibrate,omitempty"`
@@ -127,6 +143,14 @@ type AndroidBody struct {
 	Custom      string `json:"custom,omitempty"`
 }
 
+/*
+必填 Android 的 payload
+"payload":{    // 必填，JSON格式，具体消息内容( Android 最大为 1840B )
+    "display_type":"xx",    // 必填，消息类型: notification(通知)、message(消息)
+    "body":{}, // 必填，消息体
+    extra:{}   // 可选，JSON格式，用户自定义key-value。
+}
+*/
 type AndroidPayload struct {
 	DisplayType string            `json:"display_type,omitempty"`
 	Body        AndroidBody       `json:"body,omitempty"`
@@ -134,24 +158,31 @@ type AndroidPayload struct {
 }
 
 /*
- 必填 消息内容(iOS最大为2012B), 包含参数说明如下(JSON格式):
- "payload":{
-    "aps":                 // 必填 严格按照APNs定义来填写
-    {
-        "alert": "xx"          // 必填
-        "badge": xx,           // 可选
-        "sound": "xx",         // 可选
-        "content-available":xx // 可选
-        "category": "xx",      // 可选, 注意: ios8才支持该字段。
-    },
-    "key1":"value1",       // 可选 用户自定义内容, "d","p"为友盟保留字段，key不可以是"d","p"
+ 必填 iOS 的消息内容(最大为2012B)，包含参数说明如下(JSON格式):
+"payload":{    // 必填，JSON格式，具体消息内容(iOS最大为2012B)
+    "aps":{},    // 必填 严格按照APNs定义来填写
+    "key1":"value1",    // 可选，用户自定义内容, "d","p"为友盟保留字段,key不可以是"d","p"
     "key2":"value2",
-    ...
-   }
-
+...
+}
 */
 type IOSPayload map[string]interface{}
 
+/*
+ 必填 iOS 的 payload 中的 aps 部分，消息内容
+"aps":{    // 必填，严格按照APNs定义来填写
+    "alert":""/{,    // 当content-available=1时(静默推送)，可选; 否则必填
+                        // 可为字典类型和字符串类型
+          "title":"title",
+          "subtitle":"subtitle",
+          "body":"body"
+     }
+    "badge": xx,    // 可选
+    "sound":"xx",    // 可选
+    "content-available":1    // 可选，代表静默推送
+    "category":"xx",    // 可选，注意: ios8才支持该字段
+}
+*/
 type IOSAps struct {
 	Alert            string `json:"alert,omitempty"`
 	Badge            string `json:"badge,omitempty"`
@@ -161,53 +192,81 @@ type IOSAps struct {
 }
 
 /*
+调用参数-Android
 {
-	  "appkey":"xx",          // 必填 应用唯一标识
-	  "timestamp":"xx",       // 必填 时间戳，10位或者13位均可，时间戳有效期为10分钟
-	  "type":"xx",            // 必填 消息发送类型,其值可以为:
-					  unicast-单播
-					  listcast-列播(要求不超过500个device_token)
-					  filecast-文件播
-					    (多个device_token可通过文件形式批量发送）
-					  broadcast-广播
-					  groupcast-组播
-					    (按照filter条件筛选特定用户群, 具体请参照filter参数)
-					  customizedcast(通过开发者自有的alias进行推送),
-					  包括以下两种case:
-					     - alias: 对单个或者多个alias进行推送
-					     - file_id: 将alias存放到文件后，根据file_id来推送
-	  "device_tokens":"xx",   // 可选 设备唯一表示
-					  当type=unicast时,必填, 表示指定的单个设备
-					  当type=listcast时,必填,要求不超过500个,
-					  多个device_token以英文逗号间隔
-	  "alias_type": "xx"      // 可选 当type=customizedcast时，必填，alias的类型,
-					  alias_type可由开发者自定义,开发者在SDK中
-					  调用setAlias(alias, alias_type)时所设置的alias_type
-	  "alias":"xx",           // 可选 当type=customizedcast时, 开发者填写自己的alias。
-					  要求不超过50个alias,多个alias以英文逗号间隔。
-					  在SDK中调用setAlias(alias, alias_type)时所设置的alias
-	  "file_id":"xx",         // 可选 当type=filecast时，file内容为多条device_token,
-					    device_token以回车符分隔
-					  当type=customizedcast时，file内容为多条alias，
-					    alias以回车符分隔，注意同一个文件内的alias所对应
-					    的alias_type必须和接口参数alias_type一致。
-					  注意，使用文件播前需要先调用文件上传接口获取file_id,
-					     具体请参照"2.4文件上传接口"
-	  "filter":{},            // 可选 终端用户筛选条件,如用户标签、地域、应用版本以及渠道等,
-	  "payload":{},
-	  "policy":{},
-	  "production_mode":"true/false" // 可选 正式/测试模式。测试模式下，广播/组播只会将消息发给测试设备。测试设备需要到web上添加。Android: 测试设备属于正式设备的一个子集。
-	  "description": "xx"      // 可选 发送消息描述，建议填写。
-	  "thirdparty_id": "xx"    // 可选 开发者自定义消息标识ID, 开发者可以为同一批发送的多条消息
-					   提供同一个thirdparty_id, 便于友盟后台后期合并统计数据。
+    "appkey":"xx",    // 必填，应用唯一标识
+    "timestamp":"xx",    // 必填，时间戳，10位或者13位均可，时间戳有效期为10分钟
+    "type":"xx",    // 必填，消息发送类型,其值可以为:
+                        // unicast-单播
+                        // listcast-列播，要求不超过500个device_token
+                        // filecast-文件播，多个device_token可通过文件形式批量发送
+                        // broadcast-广播
+                        // groupcast-组播，按照filter筛选用户群,请参照filter参数
+                        // customizedcast，通过alias进行推送，包括以下两种case:
+                        // -alias:对单个或者多个alias进行推送
+                        // -file_id:将alias存放到文件后，根据file_id来推送
+    "device_tokens":"xx",    // 当type=unicast时,必填,表示指定的单个设备
+                                     // 当type=listcast时,必填,要求不超过500个,以英文逗号分隔
+    "alias_type":"xx",    // 当type=customizedcast时,必填
+                                // alias的类型, alias_type可由开发者自定义,开发者在SDK中调用setAlias(alias, alias_type)时所设置的alias_type
+    "alias":"xx",    // 当type=customizedcast时,选填(此参数和file_id二选一)
+                        // 开发者填写自己的alias,要求不超过500个alias,多个alias以英文逗号间隔
+                        // 在SDK中调用setAlias(alias, alias_type)时所设置的alias
+    "file_id":"xx",    // 当type=filecast时，必填，file内容为多条device_token，以回车符分割
+                          // 当type=customizedcast时，选填(此参数和alias二选一)
+                          // file内容为多条alias，以回车符分隔。注意同一个文件内的alias所对应的alias_type必须和接口参数alias_type一致
+                          // 使用文件播需要先调用文件上传接口获取file_id，参照"文件上传"
+    "filter":{},    // 当type=groupcast时，必填，用户筛选条件，如用户标签、渠道等，参考附录G
+                     // filter的内容长度最大为3000B
+    "payload":{},   // 必填，JSON格式，具体消息内容(Android最大为1840B)
+    "policy":{},  // 可选，发送策略
+    "production_mode":"true/false",    // 可选，true正式模式，false测试模式。默认为true
+                                                     // 测试模式只对“广播”、“组播”类消息生效，其他类型的消息任务（如“文件播”）不会走测试模式
+                                                     // 测试模式只会将消息发给测试设备。测试设备需要到web上添加
+                                                     // Android:测试设备属于正式设备的一个子集
+    "description":"xx",    // 可选，发送消息描述，建议填写
+
+    "channel_properties":{}   // 可选，厂商通道相关的特殊配置
+}
+*/
+/*
+调用参数-iOS
+{
+    "appkey":"xx",    // 必填，应用唯一标识
+    "timestamp":"xx",    // 必填，时间戳，10位或者13位均可，时间戳有效期为10分钟
+    "type":"xx",    // 必填，消息发送类型,其值可以为:
+                        // unicast-单播
+                        // listcast-列播，要求不超过500个device_token
+                        // filecast-文件播，多个device_token可通过文件形式批量发送
+                        // broadcast-广播
+                        // groupcast-组播，按照filter筛选用户群, 请参照filter参数
+                        // customizedcast，通过alias进行推送，包括以下两种case:
+                        // -alias: 对单个或者多个alias进行推送
+                        // -file_id: 将alias存放到文件后，根据file_id来推送
+    "device_tokens":"xx",    // 当type=unicast时, 必填, 表示指定的单个设备
+                                      // 当type=listcast时, 必填, 要求不超过500个, 以英文逗号分隔
+    "alias_type":"xx",    // 当type=customizedcast时, 必填
+                                // alias的类型, alias_type可由开发者自定义, 开发者在SDK中调用setAlias(alias, alias_type)时所设置的alias_type
+    "alias":"xx",    // 当type=customizedcast时, 选填(此参数和file_id二选一)
+                        // 开发者填写自己的alias, 要求不超过500个alias, 多个alias以英文逗号间隔
+                        // 在SDK中调用setAlias(alias, alias_type)时所设置的alias
+    "file_id":"xx",    // 当type=filecast时，必填，file内容为多条device_token，以回车符分割
+                          // 当type=customizedcast时，选填(此参数和alias二选一)
+                          // file内容为多条alias，以回车符分隔。注意同一个文件内的alias所对应的alias_type必须和接口参数alias_type一致。
+                          // 使用文件播需要先调用文件上传接口获取file_id，参照"2.4文件上传接口"
+    "filter":{},    // 当type=groupcast时，必填，用户筛选条件，如用户标签、渠道等，参考附录G
+    "payload":{},    // 必填，JSON格式，具体消息内容(iOS最大为2012B)
+    "policy":{},    // 可选，发送策略
+    "production_mode":"true/false",    // 可选，正式/测试模式。默认为true
+                                                    // 测试模式只对“广播”、“组播”类消息生效，其他类型的消息任务（如“文件播”）不会走测试模式
+                                                    // 测试模式只会将消息发给测试设备。测试设备需要到web上添加
+    "description":"xx"    // 可选，发送消息描述，建议填写接口
 }
 */
 type Data struct {
 	Platform          Platform          `json:"-"`
 	AppKey            string            `json:"appkey,omitempty"`
 	TimeStamp         int64             `json:"timestamp,omitempty"`
-	TaskId            string            `json:"task_id,omitempty"`
-	FileContent       string            `json:"content,omitempty"`
 	Type              string            `json:"type,omitempty"`
 	DeviceTokens      string            `json:"device_tokens,omitempty"`
 	AliasType         string            `json:"alias_type,omitempty"`
@@ -217,16 +276,27 @@ type Data struct {
 	Payload           interface{}       `json:"payload,omitempty"`
 	Policy            Policy            `json:"policy,omitempty"`
 	ProductionMode    *bool             `json:"production_mode,omitempty"`
-	Description       string            `json:"description,omitempty"`
-	ThirdPartyId      string            `json:"thirdparty_id,omitempty"`
-	ChannelPush       bool              `json:"mipush,omitempty"`
-	ChannelProperties ChannelProperties `json:"channel_properties,omitempty"`
+	Description       string            `json:"description,omitempty"`        // 只用于 iOS
+	ChannelProperties ChannelProperties `json:"channel_properties,omitempty"` // 只用于 Android
 	dataBytes         []byte            `json:"-"`
 }
 
-type ChannelProperties struct {
-	ChannelActivity string `json:"channel_activity,omitempty"`
+/*
+可选，厂商通道相关的特殊配置，只有 Android 可选该配置
+"channel_properties":{    // 可选，厂商通道相关的特殊配置
+    "channel_activity":"xxx",  //系统弹窗，只有display_type=notification时有效，表示华为、小米、oppo、vivo、魅族的设备离线时走系统通道下发时打开指定页面acitivity的完整包路径。
+    "xiaomi_channel_id":"",    // 小米channel_id，具体使用及限制请参考小米推送文档 https://dev.mi.com/console/doc/detail?pId=2086
+    "vivo_classification":"1",    // vivo消息分类：0运营消息，1系统消息，需要到vivo申请，具体使用及限制参考[vivo消息推送分类功能说明]https://dev.vivo.com.cn/documentCenter/doc/359
+    "oppo_channel_id":"xx"    // 可选， android8以上推送消息需要新建通道，否则消息无法触达用户。push sdk 6.0.5及以上创建了默认的通道:upush_default，消息提交厂商通道时默认添加该通道。如果要自定义通道名称或使用私信，请自行创建通道，推送消息时携带该参数具体可参考[oppo通知通道适配] https://open.oppomobile.com/wiki/doc#id=10289
 }
+*/
+type ChannelProperties struct {
+	ChannelActivity    string `json:"channel_activity,omitempty"`
+	XiaomiChannelId    string `json:"xiaomi_channel_id,omitempty"`   // 暂时用不到
+	VivoClassification string `json:"vivo_classification,omitempty"` // 暂时用不到
+	OppoChannelId      string `json:"oppo_channel_id,omitempty"`     // 暂时用不到
+}
+
 type response struct {
 	Code string `json:"ret,omitempty"`
 	Data Result `json:"data"`
