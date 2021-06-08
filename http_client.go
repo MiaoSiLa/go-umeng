@@ -67,7 +67,7 @@ const (
 type Policy struct {
 	StartTime      string `json:"start_time,omitempty"`
 	ExpireTime     string `json:"expire_time,omitempty"`
-	MaxSendNum     int    `json:"max_send_num,omitempty"` // Android 使用
+	MaxSendNum     int64  `json:"max_send_num,omitempty"` // Android 使用
 	OutBizNo       string `json:"out_biz_no,omitempty"`
 	ApnsCollapseId string `json:"apns_collapse_id,omitempty"` // iOS 使用
 }
@@ -125,22 +125,22 @@ type Policy struct {
 }
 */
 type AndroidBody struct {
-	DisplayType string `json:"-"`
-	Title       string `json:"title,omitempty"`
-	Text        string `json:"text,omitempty"`
-	Icon        string `json:"icon,omitempty"`
-	LargeIcon   string `json:"largeIcon,omitempty"`
-	Img         string `json:"img,omitempty"`
-	ExpandImage string `json:"expand_image,omitempty"` // 暂时用不到
-	Sound       string `json:"sound,omitempty"`
-	BuilderId   string `json:"builder_id,omitempty"`
-	PlayVibrate bool   `json:"play_vibrate,omitempty"`
-	PlayLights  bool   `json:"play_lights,omitempty"`
-	PlaySound   bool   `json:"play_sound,omitempty"`
-	AfterOpen   string `json:"after_open,omitempty"`
-	Url         string `json:"url,omitempty"`
-	Activity    string `json:"activity,omitempty"`
-	Custom      string `json:"custom,omitempty"`
+	DisplayType string      `json:"-"`
+	Title       string      `json:"title,omitempty"`
+	Text        string      `json:"text,omitempty"`
+	Icon        string      `json:"icon,omitempty"`
+	LargeIcon   string      `json:"largeIcon,omitempty"`
+	Img         string      `json:"img,omitempty"`
+	ExpandImage string      `json:"expand_image,omitempty"` // 暂时用不到
+	Sound       string      `json:"sound,omitempty"`
+	BuilderId   int64       `json:"builder_id,omitempty"`
+	PlayVibrate string      `json:"play_vibrate,omitempty"`
+	PlayLights  string      `json:"play_lights,omitempty"`
+	PlaySound   string      `json:"play_sound,omitempty"`
+	AfterOpen   string      `json:"after_open,omitempty"`
+	Url         string      `json:"url,omitempty"`
+	Activity    string      `json:"activity,omitempty"`
+	Custom      interface{} `json:"custom,omitempty"` //用户自定义内容，可以为字符串或者JSON格式
 }
 
 /*
@@ -169,6 +169,21 @@ type AndroidPayload struct {
 type IOSPayload map[string]interface{}
 
 /*
+ 可选 iOS 的 aps 中的 alert 部分，alert 可为如下的结构体的数据结构
+"alert":""/{,    // 当content-available=1时(静默推送)，可选; 否则必填
+                    // 可为字典类型和字符串类型
+      "title":"title",
+      "subtitle":"subtitle",
+      "body":"body"
+}
+*/
+type Alert struct {
+	Title    string `json:"title,omitempty"`
+	SubTitle string `json:"subtitle,omitempty"`
+	Body     string `json:"body,omitempty"`
+}
+
+/*
  必填 iOS 的 payload 中的 aps 部分，消息内容
 "aps":{    // 必填，严格按照APNs定义来填写
     "alert":""/{,    // 当content-available=1时(静默推送)，可选; 否则必填
@@ -184,11 +199,12 @@ type IOSPayload map[string]interface{}
 }
 */
 type IOSAps struct {
-	Alert            string `json:"alert,omitempty"`
-	Badge            string `json:"badge,omitempty"`
-	Sound            string `json:"sound,omitempty"`
-	ContentAvailable string `json:"content-available,omitempty"`
-	Category         string `json:"category,omitempty"`
+	Alert            interface{} `json:"alert,omitempty"` // 可为字典类型和字符串类型
+	Badge            int64       `json:"badge,omitempty"`
+	Sound            string      `json:"sound,omitempty"`
+	ContentAvailable int64       `json:"content-available,omitempty"`
+	Category         string      `json:"category,omitempty"`
+	Image            string      `json:"image,omitempty"` // 图片地址
 }
 
 /*
@@ -266,17 +282,17 @@ type IOSAps struct {
 type Data struct {
 	Platform          Platform          `json:"-"`
 	AppKey            string            `json:"appkey,omitempty"`
-	TimeStamp         int64             `json:"timestamp,omitempty"`
+	TimeStamp         string            `json:"timestamp,omitempty"`
 	Type              string            `json:"type,omitempty"`
 	DeviceTokens      string            `json:"device_tokens,omitempty"`
 	AliasType         string            `json:"alias_type,omitempty"`
 	Alias             string            `json:"alias,omitempty"`
 	FileId            string            `json:"file_id,omitempty"`
-	Filter            string            `json:"filter,omitempty"`
+	Filter            interface{}       `json:"filter,omitempty"` // 比如取值为 {}
 	Payload           interface{}       `json:"payload,omitempty"`
 	Policy            Policy            `json:"policy,omitempty"`
-	ProductionMode    *bool             `json:"production_mode,omitempty"`
-	Description       string            `json:"description,omitempty"`        // 只用于 iOS
+	ProductionMode    string            `json:"production_mode,omitempty"`
+	Description       string            `json:"description,omitempty"`
 	ChannelProperties ChannelProperties `json:"channel_properties,omitempty"` // 只用于 Android
 	dataBytes         []byte            `json:"-"`
 }
@@ -339,8 +355,17 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		// Doc: http://dev.umeng.com/push/android/api-doc#2_1_3
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
-			if v.DisplayType == "message" && len(v.Custom) == 0 {
-				panic("missing custom field")
+			if v.DisplayType == "message" {
+				if s, ok := v.Custom.(string); ok {
+					if len(s) == 0 {
+						panic("missing custom field")
+					}
+				}
+				if s, ok := v.Custom.(map[string]interface{}); ok {
+					if len(s) == 0 {
+						panic("missing custom field")
+					}
+				}
 			}
 			payload.DisplayType = v.DisplayType
 			payload.Body = v
