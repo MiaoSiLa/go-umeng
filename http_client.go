@@ -356,7 +356,10 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		// Doc: http://dev.umeng.com/push/android/api-doc#2_1_3
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
-			if v.DisplayType == "message" {
+			if v.DisplayType != "message" && v.DisplayType != "notification" {
+				panic("missing display_type field")
+			}
+			if v.DisplayType == "message" || v.DisplayType == "notification" && v.AfterOpen == "go_custom" {
 				switch v.Custom.(type) {
 				case string:
 					if len(v.Custom.(string)) == 0 {
