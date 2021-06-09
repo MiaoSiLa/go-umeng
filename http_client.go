@@ -29,6 +29,7 @@ const (
 	AppIOS     Platform = 2
 )
 
+// 友盟 API 文档：developer.umeng.com/docs/67966/detail/68343
 /*
 可选，Android 的发送策略
 "policy":{    // 可选，发送策略
