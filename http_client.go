@@ -200,12 +200,12 @@ type Alert struct {
 }
 */
 type IOSAps struct {
-	Alert            *Alert `json:"alert,omitempty"` // 可为字典类型和字符串类型
-	Badge            int64  `json:"badge,omitempty"`
-	Sound            string `json:"sound,omitempty"`
-	ContentAvailable int64  `json:"content-available,omitempty"`
-	Category         string `json:"category,omitempty"`
-	Image            string `json:"image,omitempty"` // 图片地址
+	Alert            interface{} `json:"alert,omitempty"` // 可为字典类型和字符串类型
+	Badge            int64       `json:"badge,omitempty"`
+	Sound            string      `json:"sound,omitempty"`
+	ContentAvailable int64       `json:"content-available,omitempty"`
+	Category         string      `json:"category,omitempty"`
+	Image            string      `json:"image,omitempty"` // 图片地址
 }
 
 /*
