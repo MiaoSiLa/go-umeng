@@ -131,7 +131,7 @@ type AndroidBody struct {
 	Icon        string      `json:"icon,omitempty"`
 	LargeIcon   string      `json:"largeIcon,omitempty"`
 	Img         string      `json:"img,omitempty"`
-	ExpandImage string      `json:"expand_image,omitempty"` // 暂时用不到
+	ExpandImage string      `json:"expand_image,omitempty"`
 	Sound       string      `json:"sound,omitempty"`
 	BuilderId   int64       `json:"builder_id,omitempty"`
 	PlayVibrate string      `json:"play_vibrate,omitempty"`
@@ -140,7 +140,7 @@ type AndroidBody struct {
 	AfterOpen   string      `json:"after_open,omitempty"`
 	Url         string      `json:"url,omitempty"`
 	Activity    string      `json:"activity,omitempty"`
-	Custom      interface{} `json:"custom,omitempty"` //用户自定义内容，可以为字符串或者JSON格式
+	Custom      interface{} `json:"custom,omitempty"` // 用户自定义内容，可以为字符串或者 JSON 格式
 }
 
 /*
@@ -199,12 +199,12 @@ type Alert struct {
 }
 */
 type IOSAps struct {
-	Alert            interface{} `json:"alert,omitempty"` // 可为字典类型和字符串类型
-	Badge            int64       `json:"badge,omitempty"`
-	Sound            string      `json:"sound,omitempty"`
-	ContentAvailable int64       `json:"content-available,omitempty"`
-	Category         string      `json:"category,omitempty"`
-	Image            string      `json:"image,omitempty"` // 图片地址
+	Alert            *Alert `json:"alert,omitempty"` // 可为字典类型和字符串类型
+	Badge            int64  `json:"badge,omitempty"`
+	Sound            string `json:"sound,omitempty"`
+	ContentAvailable int64  `json:"content-available,omitempty"`
+	Category         string `json:"category,omitempty"`
+	Image            string `json:"image,omitempty"` // 图片地址
 }
 
 /*
@@ -308,9 +308,9 @@ type Data struct {
 */
 type ChannelProperties struct {
 	ChannelActivity    string `json:"channel_activity,omitempty"`
-	XiaomiChannelId    string `json:"xiaomi_channel_id,omitempty"`   // 暂时用不到
-	VivoClassification string `json:"vivo_classification,omitempty"` // 暂时用不到
-	OppoChannelId      string `json:"oppo_channel_id,omitempty"`     // 暂时用不到
+	XiaomiChannelId    string `json:"xiaomi_channel_id,omitempty"`
+	VivoClassification string `json:"vivo_classification,omitempty"`
+	OppoChannelId      string `json:"oppo_channel_id,omitempty"`
 }
 
 type response struct {
@@ -356,15 +356,18 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
 			if v.DisplayType == "message" {
-				if s, ok := v.Custom.(string); ok {
-					if len(s) == 0 {
+				switch v.Custom.(type) {
+				case string:
+					if len(v.Custom.(string)) == 0 {
 						panic("missing custom field")
 					}
-				}
-				if s, ok := v.Custom.(map[string]interface{}); ok {
-					if len(s) == 0 {
+				case map[string]interface{}:
+					// 只能传 json 对象不可传 json 数组
+					if len(v.Custom.(map[string]interface{})) == 0 {
 						panic("missing custom field")
 					}
+				default:
+					panic("invalid custom field")
 				}
 			}
 			payload.DisplayType = v.DisplayType
