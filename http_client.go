@@ -205,7 +205,7 @@ type IOSAps struct {
 	Sound            string      `json:"sound,omitempty"`
 	ContentAvailable int64       `json:"content-available,omitempty"`
 	Category         string      `json:"category,omitempty"`
-	Image            string      `json:"image,omitempty"` // 图片地址
+	Image            string      `json:"image,omitempty"` // 给 iOS 推送的图片，参考文档 https://developer.umeng.com/docs/67966/detail/66734 里的 API 发送部分
 }
 
 /*
