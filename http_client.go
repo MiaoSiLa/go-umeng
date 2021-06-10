@@ -29,7 +29,7 @@ const (
 	AppIOS     Platform = 2
 )
 
-// 友盟 API 文档：developer.umeng.com/docs/67966/detail/68343
+// 友盟 API 文档：https://developer.umeng.com/docs/67966/detail/68343
 /*
 可选，Android 的发送策略
 "policy":{    // 可选，发送策略
@@ -357,17 +357,17 @@ func (data *Data) Push(body, aps, policy interface{}, extras map[string]string) 
 		payload := &AndroidPayload{}
 		if v, ok := body.(AndroidBody); ok {
 			if v.DisplayType != "message" && v.DisplayType != "notification" {
-				panic("missing display_type field")
+				panic("invalid display_type field")
 			}
-			if v.DisplayType == "message" || v.DisplayType == "notification" && v.AfterOpen == "go_custom" {
-				switch v.Custom.(type) {
+			if v.DisplayType == "message" || (v.DisplayType == "notification" && v.AfterOpen == "go_custom") {
+				switch c := v.Custom.(type) {
 				case string:
-					if len(v.Custom.(string)) == 0 {
+					if len(c) == 0 {
 						panic("missing custom field")
 					}
 				case map[string]interface{}:
 					// 只能传 json 对象不可传 json 数组
-					if len(v.Custom.(map[string]interface{})) == 0 {
+					if len(c) == 0 {
 						panic("missing custom field")
 					}
 				default:
