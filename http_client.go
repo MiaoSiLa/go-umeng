@@ -287,6 +287,7 @@ type Data struct {
 	TimeStamp         string            `json:"timestamp,omitempty"`
 	Type              string            `json:"type,omitempty"`
 	DeviceTokens      string            `json:"device_tokens,omitempty"`
+	FileContent       string            `json:"content,omitempty"`
 	AliasType         string            `json:"alias_type,omitempty"`
 	Alias             string            `json:"alias,omitempty"`
 	FileId            string            `json:"file_id,omitempty"`
