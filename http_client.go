@@ -302,17 +302,19 @@ type Data struct {
 
 /*
 可选，厂商通道相关的特殊配置，只有 Android 可选该配置
-"channel_properties":{    // 可选，厂商通道相关的特殊配置
+"channel_properties":{         // 可选，厂商通道相关的特殊配置
     "channel_activity":"xxx",  //系统弹窗，只有display_type=notification时有效，表示华为、小米、oppo、vivo、魅族的设备离线时走系统通道下发时打开指定页面acitivity的完整包路径。
     "xiaomi_channel_id":"",    // 小米channel_id，具体使用及限制请参考小米推送文档 https://dev.mi.com/console/doc/detail?pId=2086
-    "vivo_classification":"1",    // vivo消息分类：0运营消息，1系统消息，需要到vivo申请，具体使用及限制参考[vivo消息推送分类功能说明]https://dev.vivo.com.cn/documentCenter/doc/359
-    "oppo_channel_id":"xx"    // 可选， android8以上推送消息需要新建通道，否则消息无法触达用户。push sdk 6.0.5及以上创建了默认的通道:upush_default，消息提交厂商通道时默认添加该通道。如果要自定义通道名称或使用私信，请自行创建通道，推送消息时携带该参数具体可参考[oppo通知通道适配] https://open.oppomobile.com/wiki/doc#id=10289
+    "vivo_classification":"1", // vivo消息分类：0运营消息，1系统消息，需要到vivo申请，具体使用及限制参考[vivo消息推送分类功能说明]https://dev.vivo.com.cn/documentCenter/doc/359
+    "vivo_category":"xx",      // vivo消息二级分类参数：友盟侧只进行参数透传，不做合法性校验，具体使用及限制参考[vivo消息推送分类功能说明]https://dev.vivo.com.cn/documentCenter/doc/359
+    "oppo_channel_id":"xx"     // 可选， android8以上推送消息需要新建通道，否则消息无法触达用户。push sdk 6.0.5及以上创建了默认的通道:upush_default，消息提交厂商通道时默认添加该通道。如果要自定义通道名称或使用私信，请自行创建通道，推送消息时携带该参数具体可参考[oppo通知通道适配] https://open.oppomobile.com/wiki/doc#id=10289
 }
 */
 type ChannelProperties struct {
 	ChannelActivity    string `json:"channel_activity,omitempty"`
 	XiaomiChannelId    string `json:"xiaomi_channel_id,omitempty"`
 	VivoClassification string `json:"vivo_classification,omitempty"`
+	VivoCategory       string `json:"vivo_category,omitempty"`
 	OppoChannelId      string `json:"oppo_channel_id,omitempty"`
 }
 
