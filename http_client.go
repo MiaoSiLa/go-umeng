@@ -318,8 +318,8 @@ type ChannelProperties struct {
 	VivoClassification      string `json:"vivo_classification,omitempty"`
 	VivoCategory            string `json:"vivo_category,omitempty"`
 	OppoChannelId           string `json:"oppo_channel_id,omitempty"`
-	HuaweiChannelImportance string `json:"huawei_channel_importance"`
-	HuaweiChannelCategory   string `json:"huawei_channel_category"`
+	HuaweiChannelImportance string `json:"huawei_channel_importance,omitempty"`
+	HuaweiChannelCategory   string `json:"huawei_channel_category,omitempty"`
 }
 
 type response struct {
