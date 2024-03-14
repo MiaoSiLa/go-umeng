@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	Host                   string = "http://msg.umeng.com"
+	Host                   string = "https://msgapi.umeng.com"
 	UploadPath             string = "/upload"
 	StatusPath             string = "/api/status"
 	CancelPath             string = "/api/cancel"
