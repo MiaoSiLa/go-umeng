@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	Host                   string = "http://msg.umeng.com"
+	Host                   string = "https://msgapi.umeng.com"
 	UploadPath             string = "/upload"
 	StatusPath             string = "/api/status"
 	CancelPath             string = "/api/cancel"
@@ -309,7 +309,8 @@ type Data struct {
     "vivo_category":"xx",             // vivo消息二级分类参数：友盟侧只进行参数透传，不做合法性校验，具体使用及限制参考[vivo消息推送分类功能说明]https://dev.vivo.com.cn/documentCenter/doc/359
     "oppo_channel_id":"xx",           // 可选， android8以上推送消息需要新建通道，否则消息无法触达用户。push sdk 6.0.5及以上创建了默认的通道:upush_default，消息提交厂商通道时默认添加该通道。如果要自定义通道名称或使用私信，请自行创建通道，推送消息时携带该参数具体可参考[oppo通知通道适配] https://open.oppomobile.com/wiki/doc#id=10289
     "huawei_channel_importance":"xx", // 可选，华为 & 荣耀消息分类 LOW：资讯营销类消息，NORMAL：服务与通讯类消息，具体使用及限制参考[华为消息发送方案]https://developer.huawei.com/consumer/cn/doc/HMSCore-Guides/message-priority-0000001181716924
-    "huawei_channel_category":"xx"    // 可选，华为自分类消息类型，具体使用及限制参考[华为消息发送方案]https://developer.huawei.com/consumer/cn/doc/development/HMSCore-Guides/message-priority-0000001181716924
+    "huawei_channel_category":"xx",   // 可选，华为自分类消息类型，具体使用及限制参考[华为消息发送方案]https://developer.huawei.com/consumer/cn/doc/development/HMSCore-Guides/message-priority-0000001181716924
+    "channel_fcm": "xx"               // 可选，fcm通道开关，0不使用，1使用
 }
 */
 type ChannelProperties struct {
@@ -320,6 +321,7 @@ type ChannelProperties struct {
 	OppoChannelId           string `json:"oppo_channel_id,omitempty"`
 	HuaweiChannelImportance string `json:"huawei_channel_importance,omitempty"`
 	HuaweiChannelCategory   string `json:"huawei_channel_category,omitempty"`
+	ChannelFCM              string `json:"channel_fcm,omitempty"`
 }
 
 type response struct {
