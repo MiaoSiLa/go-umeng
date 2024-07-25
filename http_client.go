@@ -135,6 +135,8 @@ type AndroidBody struct {
 	ExpandImage string      `json:"expand_image,omitempty"`
 	Sound       string      `json:"sound,omitempty"`
 	BuilderId   int64       `json:"builder_id,omitempty"`
+	SetBadge    int         `json:"set_badge,omitempty"`
+	AddBadge    int         `json:"add_badge,omitempty"`
 	PlayVibrate string      `json:"play_vibrate,omitempty"`
 	PlayLights  string      `json:"play_lights,omitempty"`
 	PlaySound   string      `json:"play_sound,omitempty"`
@@ -319,6 +321,7 @@ type ChannelProperties struct {
 	VivoClassification      string `json:"vivo_classification,omitempty"`
 	VivoCategory            string `json:"vivo_category,omitempty"`
 	OppoChannelId           string `json:"oppo_channel_id,omitempty"`
+	MainActivity            string `json:"main_activity,omitempty"`
 	HuaweiChannelImportance string `json:"huawei_channel_importance,omitempty"`
 	HuaweiChannelCategory   string `json:"huawei_channel_category,omitempty"`
 	ChannelFCM              string `json:"channel_fcm,omitempty"`
